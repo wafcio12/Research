@@ -43,14 +43,27 @@ def dataset(dataset: Dataset):
 
 
 def readBrca() -> ResearchData:
-    name = "BRCA do WGCNA.xlsx"
-    set_name = "set_1"
-    features = read_excel(get_path(set_name, name), set_name, "clinical data patient")
+    set_name = "BRCA"
+    features = read_excel(Path(r"C:\Users\klaud\OneDrive\PYTONG projekty\Dane TCGA\BRCA\PanCancer BRCA - expresja (tumor); klinika; próbki TCGA normal (zmatchowane do nowotworowych).xlsx"), set_name, 'Patient clinic')
     features.set_index("PATIENT_ID", inplace=True)
-    expressions = read_excel(get_path(set_name, name), set_name, "expression")
-    expressions.set_index("Hugo_Symbol", inplace=True)
+    features.index = features.index.map(lambda idx: idx.removesuffix("-01"))
+
+    expressions = read_excel(Path(r"C:\Users\klaud\OneDrive\PYTONG projekty\Dane TCGA\BRCA\PanCancer BRCA - expresja (tumor); klinika; próbki TCGA normal (zmatchowane do nowotworowych).xlsx"), set_name, 'Expression (tumor) PanCancer ')
+    expressions.set_index(expressions.columns[0], inplace=True)
     expressions = expressions.T
     expressions.index = expressions.index.map(lambda idx: idx.removesuffix("-01"))
+    expressions = expressions.sort_index()
+
+
+
+    expressions_normal = read_excel(Path(r"C:\Users\klaud\OneDrive\PYTONG projekty\Dane TCGA\BRCA\PanCancer BRCA - expresja (tumor); klinika; próbki TCGA normal (zmatchowane do nowotworowych).xlsx"), set_name, 'Expression (normals) PanCancer ')
+    expressions_normal.set_index(expressions_normal.columns[0], inplace=True)
+    expressions_normal = expressions_normal.T
+    expressions_normal.index = expressions_normal.index.map(lambda idx: idx.removesuffix("-11"))
+    expressions_normal = expressions_normal.sort_index()
+    expressions_normal = expressions_normal.add_suffix('-norm')
+
+    expressions_merged = expressions.join(expressions_normal, how='left')
 
     genes = expressions.columns.tolist()
 
@@ -59,7 +72,7 @@ def readBrca() -> ResearchData:
     patients = features.index.tolist()
 
     return ResearchData(
-        expressions,
+        expressions_merged,
         features,
         genes,
         patients
