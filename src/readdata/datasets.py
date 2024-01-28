@@ -15,7 +15,7 @@ class Dataset(Enum):
 
 
 def get_path(set: str, name: str) -> Path:
-    return Path("../data/" + set + "/" + name)
+    return Path("data/" + set + "/" + name)
 
 
 def _ensure_matching_indices(df1: pd.DataFrame, df2: pd.DataFrame):
@@ -24,7 +24,7 @@ def _ensure_matching_indices(df1: pd.DataFrame, df2: pd.DataFrame):
     patientsDiff = df1Indices.difference(df2Indices)
 
     df1.drop(index=df1.index.intersection(list(patientsDiff)), inplace=True)
-    df2 = df2.drop(index=df2.index.intersection(list(patientsDiff)), inplace=True)
+    df2.drop(index=df2.index.intersection(list(patientsDiff)), inplace=True)
 
 
 _datasets: Dict[Dataset, ResearchData] = {}
