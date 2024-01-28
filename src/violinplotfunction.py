@@ -4,7 +4,14 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from scipy.stats import ttest_ind
 
+from src.readdata.datasets import readBrca
+
+# violin_plot_gene(data, "MYBL2")
+
+data = readBrca()
+geneName = "MYBL2"
 
 def violin_plot_gene(data: ResearchData, geneName: str):
     df = data.expressions[[geneName, geneName + '-norm']]
@@ -18,6 +25,12 @@ def violin_plot_gene(data: ResearchData, geneName: str):
 
     merge = pd.concat([df1, df2], ignore_index=True)
 
+    ttest = ttest_ind(df1['Expression Log2'].dropna(), df2['Expression Log2'].dropna())
+    pvalue = ttest.pvalue
+
+    print("ttest")
+    print(ttest)
+
     merge['Expression Log2'] = np.log2(merge['Expression Log2'] + 1)
 
     fig = px.violin(merge, y="Expression Log2", color="status", box=True, points='all',
@@ -30,5 +43,18 @@ def violin_plot_gene(data: ResearchData, geneName: str):
             'x': 0.5,
             'xanchor': 'center'
         })
+
+    fig.add_annotation(
+        x=0, y=1,
+        text="pvalue " + str(pvalue),
+        showarrow=False,
+    )
+
+    # fig.add_annotation(
+    #     x=0.5, y=1.2,
+    #     xref='paper', yref='paper',
+    #     text=f'p-value: {pvalue:.4f}',
+    #     showarrow=False,
+    #     font=dict(color='red', size=12))
 
     fig.show()
